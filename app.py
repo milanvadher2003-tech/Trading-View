@@ -19,8 +19,8 @@ if file:
 
     df = df.sort_values("datetime")
 
-    # Lightweight Charts compatible time
-    df["time"] = df["datetime"].dt.strftime("%Y-%m-%d %H:%M:%S")
+    # IMPORTANT → ISO format
+    df["time"] = df["datetime"].dt.strftime("%Y-%m-%dT%H:%M:%S")
 
     data = []
 
@@ -36,7 +36,6 @@ if file:
     data_json = json.dumps(data)
 
     html = f"""
-    <!DOCTYPE html>
     <html>
     <head>
     <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
@@ -51,8 +50,6 @@ if file:
     const chart = LightweightCharts.createChart(
         document.getElementById('chart'),
         {{
-            width: 1200,
-            height: 700,
             layout: {{
                 background: {{ color: '#000000' }},
                 textColor: '#DDD'
@@ -60,10 +57,6 @@ if file:
             grid: {{
                 vertLines: {{ color: '#333' }},
                 horzLines: {{ color: '#333' }}
-            }},
-            timeScale: {{
-                timeVisible: true,
-                secondsVisible: false
             }}
         }}
     );
