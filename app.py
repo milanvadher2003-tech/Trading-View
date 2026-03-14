@@ -15,18 +15,20 @@ if file:
 
     df.columns = df.columns.str.strip()
 
+    # datetime convert
     df["datetime"] = pd.to_datetime(df["datetime"])
 
     df = df.sort_values("datetime")
 
-    df["time"] = df["datetime"].dt.strftime("%Y-%m-%dT%H:%M:%S")
+    # UNIX timestamp
+    df["time"] = df["datetime"].astype("int64") // 10**9
 
     data = []
 
     for _, r in df.iterrows():
 
         data.append({
-            "time": r["time"],
+            "time": int(r["time"]),
             "open": float(r["open"]),
             "high": float(r["high"]),
             "low": float(r["low"]),
