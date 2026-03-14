@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
-import json
-import streamlit.components.v1 as components
+import plotly.graph_objects as go
 
 st.set_page_config(layout="wide")
 
@@ -16,73 +15,26 @@ if uploaded_file:
     df["datetime"] = pd.to_datetime(df["datetime"])
     df = df.sort_values("datetime")
 
-    # convert to unix timestamp
-    df["time"] = (df["datetime"].astype("int64") // 10**9).astype(int)
+    fig = go.Figure(data=[go.Candlestick(
+        x=df["datetime"],
+        open=df["open"],
+        high=df["high"],
+        low=df["low"],
+        close=df["close"],
 
-    data = []
+        increasing_line_color='#008f5a',
+        decreasing_line_color='#ff6b6b'
+    )])
 
-    for _, row in df.iterrows():
-        data.append({
-            "time": int(row["time"]),
-            "open": float(row["open"]),
-            "high": float(row["high"]),
-            "low": float(row["low"]),
-            "close": float(row["close"])
-        })
+    fig.update_layout(
 
-    data_json = json.dumps(data)
+        height=700,
 
-    html = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-    <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
-    </head>
+        xaxis_rangeslider_visible=False,
 
-    <body>
-    <div id="chart" style="width:100%; height:700px;"></div>
+        template="plotly_dark",
 
-    <script>
+        dragmode='pan'
+    )
 
-    const chart = LightweightCharts.createChart(
-        document.getElementById('chart'),
-        {{
-            width: window.innerWidth,
-            height: 700,
-            layout: {{
-                background: {{ color: 'white' }},
-                textColor: 'black'
-            }},
-            grid: {{
-                vertLines: {{ color: '#eee' }},
-                horzLines: {{ color: '#eee' }}
-            }},
-            crosshair: {{
-                mode: LightweightCharts.CrosshairMode.Normal
-            }},
-            timeScale: {{
-                timeVisible: true
-            }}
-        }}
-    );
-
-    const candleSeries = chart.addCandlestickSeries({{
-        upColor: '#008f5a',
-        downColor: '#ff6b6b',
-        borderVisible: false,
-        wickUpColor: '#008f5a',
-        wickDownColor: '#ff6b6b'
-    }});
-
-    const data = {data_json};
-
-    candleSeries.setData(data);
-
-    chart.timeScale().fitContent();
-
-    </script>
-    </body>
-    </html>
-    """
-
-    components.html(html, height=720)
+    st.plotly_chart(fig, use_container_width=True)
