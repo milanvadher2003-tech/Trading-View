@@ -12,37 +12,42 @@ if file:
 
     df = pd.read_excel(file)
 
+    # column clean
+    df.columns = df.columns.str.strip()
+
     # datetime convert
     df["datetime"] = pd.to_datetime(df["datetime"])
 
     # sort
     df = df.sort_values("datetime")
 
-    # convert to seconds timestamp
+    # unix timestamp
     df["time"] = df["datetime"].apply(lambda x: int(x.timestamp()))
 
     data = []
 
-    for i in range(len(df)):
+    for _, r in df.iterrows():
 
         data.append({
-            "time": df.iloc[i]["time"],
-            "open": float(df.iloc[i]["open"]),
-            "high": float(df.iloc[i]["high"]),
-            "low": float(df.iloc[i]["low"]),
-            "close": float(df.iloc[i]["close"])
+            "time": int(r["time"]),
+            "open": float(r["open"]),
+            "high": float(r["high"]),
+            "low": float(r["low"]),
+            "close": float(r["close"])
         })
 
-    chart = [{
-        "chart": {
-            "height": 700
-        },
-        "series": [
-            {
-                "type": "Candlestick",
-                "data": data
-            }
-        ]
-    }]
+    chart = [
+        {
+            "chart": {
+                "height": 700
+            },
+            "series": [
+                {
+                    "type": "Candlestick",
+                    "data": data
+                }
+            ]
+        }
+    ]
 
-    renderLightweightCharts(chart)
+    renderLightweightCharts(charts=chart)
