@@ -1,10 +1,11 @@
 import streamlit as st
 import pandas as pd
-from streamlit_lightweight_charts import renderLightweightCharts
+import json
+import streamlit.components.v1 as components
 
 st.set_page_config(layout="wide")
 
-st.title("TradingView Candlestick")
+st.title("TradingView Style Chart")
 
 file = st.file_uploader("Upload Excel", type=["xlsx"])
 
@@ -18,7 +19,7 @@ if file:
 
     df = df.sort_values("datetime")
 
-    df["time"] = df["datetime"].dt.strftime("%Y-%m-%d %H:%M:%S")
+    df["time"] = df["datetime"].dt.strftime("%Y-%m-%dT%H:%M:%S")
 
     data = []
 
@@ -32,18 +33,48 @@ if file:
             "close": float(r["close"])
         })
 
-    chart = [
-        {
-            "chart": {
-                "height": 700
-            },
-            "series": [
-                {
-                    "type": "candlestick",
-                    "data": data
-                }
-            ]
-        }
-    ]
+    data_json = json.dumps(data)
 
-    renderLightweightCharts(chart)
+    html = f"""
+    <html>
+    <head>
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    </head>
+
+    <body>
+
+    <div id="chart" style="width:100%; height:700px;"></div>
+
+    <script>
+
+    const chart = LightweightCharts.createChart(
+        document.getElementById('chart'),
+        {{
+            width: 1200,
+            height: 700,
+            layout: {{
+                background: {{ color: '#000000' }},
+                textColor: '#DDD'
+            }},
+            grid: {{
+                vertLines: {{ color: '#333' }},
+                horzLines: {{ color: '#333' }}
+            }}
+        }}
+    );
+
+    const candleSeries = chart.addCandlestickSeries();
+
+    const data = {data_json};
+
+    candleSeries.setData(data);
+
+    chart.timeScale().fitContent();
+
+    </script>
+
+    </body>
+    </html>
+    """
+
+    components.html(html, height=720)
