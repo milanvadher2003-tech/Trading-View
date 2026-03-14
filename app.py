@@ -1,40 +1,35 @@
 import streamlit as st
-import pandas as pd
-import plotly.graph_objects as go
+import streamlit.components.v1 as components
 
 st.set_page_config(layout="wide")
 
-st.title("📊 TradingView Style Candlestick Chart")
+st.title("TradingView Chart")
 
-uploaded_file = st.file_uploader("Upload Excel File", type=["xlsx"])
+html = """
+<div class="tradingview-widget-container">
+  <div id="tradingview_chart"></div>
 
-if uploaded_file:
+  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 
-    df = pd.read_excel(uploaded_file)
+  <script type="text/javascript">
+  new TradingView.widget(
+  {
+  "width": "100%",
+  "height": 700,
+  "symbol": "BINANCE:BTCUSDT",
+  "interval": "15",
+  "timezone": "Asia/Kolkata",
+  "theme": "dark",
+  "style": "1",
+  "locale": "en",
+  "toolbar_bg": "#f1f3f6",
+  "enable_publishing": false,
+  "allow_symbol_change": true,
+  "container_id": "tradingview_chart"
+}
+  );
+  </script>
+</div>
+"""
 
-    df["datetime"] = pd.to_datetime(df["datetime"])
-    df = df.sort_values("datetime")
-
-    fig = go.Figure(data=[go.Candlestick(
-        x=df["datetime"],
-        open=df["open"],
-        high=df["high"],
-        low=df["low"],
-        close=df["close"],
-
-        increasing_line_color='#008f5a',
-        decreasing_line_color='#ff6b6b'
-    )])
-
-    fig.update_layout(
-
-        height=700,
-
-        xaxis_rangeslider_visible=False,
-
-        template="plotly_dark",
-
-        dragmode='pan'
-    )
-
-    st.plotly_chart(fig, use_container_width=True)
+components.html(html, height=720)
