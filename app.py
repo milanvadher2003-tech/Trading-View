@@ -5,7 +5,7 @@ import streamlit.components.v1 as components
 
 st.set_page_config(layout="wide")
 
-st.title("📊 TradingView Style Chart")
+st.title("📊 TradingView Style Candlestick Chart")
 
 uploaded_file = st.file_uploader("Upload Excel File", type=["xlsx"])
 
@@ -16,14 +16,14 @@ if uploaded_file:
     df["datetime"] = pd.to_datetime(df["datetime"])
     df = df.sort_values("datetime")
 
-    # Lightweight chart time format
-    df["time"] = df["datetime"].dt.strftime("%Y-%m-%d")
+    # convert to unix timestamp
+    df["time"] = (df["datetime"].astype("int64") // 10**9).astype(int)
 
     data = []
 
     for _, row in df.iterrows():
         data.append({
-            "time": row["time"],
+            "time": int(row["time"]),
             "open": float(row["open"]),
             "high": float(row["high"]),
             "low": float(row["low"]),
@@ -36,7 +36,7 @@ if uploaded_file:
     <!DOCTYPE html>
     <html>
     <head>
-        <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+    <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
     </head>
 
     <body>
@@ -47,7 +47,7 @@ if uploaded_file:
     const chart = LightweightCharts.createChart(
         document.getElementById('chart'),
         {{
-            width: 1200,
+            width: window.innerWidth,
             height: 700,
             layout: {{
                 background: {{ color: 'white' }},
@@ -66,7 +66,13 @@ if uploaded_file:
         }}
     );
 
-    const candleSeries = chart.addCandlestickSeries();
+    const candleSeries = chart.addCandlestickSeries({{
+        upColor: '#008f5a',
+        downColor: '#ff6b6b',
+        borderVisible: false,
+        wickUpColor: '#008f5a',
+        wickDownColor: '#ff6b6b'
+    }});
 
     const data = {data_json};
 
@@ -75,7 +81,6 @@ if uploaded_file:
     chart.timeScale().fitContent();
 
     </script>
-
     </body>
     </html>
     """
