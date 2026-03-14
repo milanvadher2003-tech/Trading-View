@@ -9,23 +9,19 @@ st.title("📊 TradingView Style Chart")
 
 uploaded_file = st.file_uploader("Upload Excel File", type=["xlsx"])
 
-if uploaded_file:
+if uploaded_file is not None:
 
     df = pd.read_excel(uploaded_file)
 
     df["datetime"] = pd.to_datetime(df["datetime"])
-
     df = df.sort_values("datetime")
 
-    # convert to unix timestamp
-    df["time"] = df["datetime"].astype("int64") // 10**9
-
+    # TradingView format
     data = []
 
     for _, row in df.iterrows():
-
         data.append({
-            "time": int(row["time"]),
+            "time": row["datetime"].strftime("%Y-%m-%dT%H:%M:%S"),
             "open": float(row["open"]),
             "high": float(row["high"]),
             "low": float(row["low"]),
@@ -35,11 +31,9 @@ if uploaded_file:
     data_json = json.dumps(data)
 
     html = f"""
-
     <html>
-
     <head>
-    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+        <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
     </head>
 
     <body>
@@ -68,7 +62,8 @@ if uploaded_file:
         }},
 
         timeScale: {{
-            timeVisible: true
+            timeVisible: true,
+            secondsVisible: false
         }}
 
     }});
@@ -92,9 +87,7 @@ if uploaded_file:
     </script>
 
     </body>
-
     </html>
-
     """
 
     components.html(html, height=720)
