@@ -15,20 +15,18 @@ if file:
 
     df.columns = df.columns.str.strip()
 
-    # datetime convert
     df["datetime"] = pd.to_datetime(df["datetime"])
 
     df = df.sort_values("datetime")
 
-    # UNIX timestamp
-    df["time"] = df["datetime"].astype("int64") // 10**9
+    # Lightweight Charts compatible time
+    df["time"] = df["datetime"].dt.strftime("%Y-%m-%d %H:%M:%S")
 
     data = []
 
     for _, r in df.iterrows():
-
         data.append({
-            "time": int(r["time"]),
+            "time": r["time"],
             "open": float(r["open"]),
             "high": float(r["high"]),
             "low": float(r["low"]),
@@ -38,6 +36,7 @@ if file:
     data_json = json.dumps(data)
 
     html = f"""
+    <!DOCTYPE html>
     <html>
     <head>
     <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
@@ -61,6 +60,10 @@ if file:
             grid: {{
                 vertLines: {{ color: '#333' }},
                 horzLines: {{ color: '#333' }}
+            }},
+            timeScale: {{
+                timeVisible: true,
+                secondsVisible: false
             }}
         }}
     );
